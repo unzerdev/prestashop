@@ -1,0 +1,8 @@
+{
+    "require": {
+        "unzerdev/php-sdk": "^3.6"
+    },
+    "config": {
+        "prepend-autoloader": false
+    }
+}

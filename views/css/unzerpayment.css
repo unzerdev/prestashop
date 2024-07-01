@@ -1,0 +1,17 @@
+.unzer-payment-option label {
+    width: 100%;
+    text-align: left;
+    display: block;
+    position: relative;
+}
+.unzer-payment-option label span {
+    position: absolute;
+    min-width: 150px;
+    left: 59px;
+}
+.unzer-payment-option label img {
+    max-height: 30px;
+    height: auto;
+    width: 50px;
+    float: left;
+}
