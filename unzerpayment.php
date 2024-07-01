@@ -53,14 +53,14 @@ class Unzerpayment extends PaymentModule
     ];
 
     /**
-     *  constructor.
+     * Unzerpayment constructor.
      */
     public function __construct()
     {
         $this->name = 'unzerpayment';
         $this->tab = 'payments_gateways';
         $this->author = 'Unzer GmbH';
-        $this->version = '1.0.0';
+        $this->version = '1.0.1';
         $this->need_instance = 1;
         $this->module_key = '';
         $this->bootstrap = true;
@@ -233,19 +233,13 @@ class Unzerpayment extends PaymentModule
                 }
             }
         } elseif (Tools::getValue('unzerAdminAction') == 'createWebhook') {
-            try {
-                \Unzerpayment\Classes\UnzerpaymentClient::getInstance()->createWebhook(
-                    \Unzerpayment\Classes\UnzerpaymentHelper::getNotifyUrl(),
-                    'all'
-                );
-                $this->_successmessage = $this->l('Webhook successfully added');
-            } catch (\Exception $e) {
-                $this->_errormessage = $this->l('Cannot add webhook.') . ' API Info: ' . $e->getMessage();
-            }
+            $this->registerWebhooks();
         }
 
         if (((bool)Tools::isSubmit('submitUnzerpaymentModule')) == true) {
             $this->postProcess();
+            $this->registerWebhooks();
+            $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance();
         }
 
         $this->context->smarty->assign('module_dir', $this->_path);
@@ -290,6 +284,22 @@ class Unzerpayment extends PaymentModule
         $output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/admin.tpl');
 
         return $output;
+    }
+
+    protected function registerWebhooks()
+    {
+        try {
+            if (is_null(\Unzerpayment\Classes\UnzerpaymentClient::getInstance())) {
+                return [];
+            }
+            \Unzerpayment\Classes\UnzerpaymentClient::getInstance()->createWebhook(
+                \Unzerpayment\Classes\UnzerpaymentHelper::getNotifyUrl(),
+                'all'
+            );
+            $this->_successmessage = $this->l('Webhook successfully added');
+        } catch (\Exception $e) {
+            $this->_errormessage = $this->l('Cannot add webhook.') . ' API Info: ' . $e->getMessage();
+        }
     }
 
     /**
