@@ -33,38 +33,46 @@ trait UnzerpaymentFrontendHooksTrait
      */
     public function hookActionFrontControllerSetMedia($params)
     {
-            if (isset($this->context->controller->php_self) && $this->context->controller->php_self == 'order') {
-                $this->context->controller->registerJavascript(
-                    'unzerpayment_static.js',
-                    'https://static.unzer.com/v1/checkout.js',
-                    ['position' => 'bottom', 'priority' => 120, 'server' => 'remote']
-                );
-                $this->context->controller->registerStylesheet(
-                    'unzerpayment_static.css',
-                    'https://static.unzer.com/v1/unzer.css'
-                );
-            }
+        if (!isset($this->context->cookie->unz_tmx_id)) {
+            $this->context->cookie->unz_tmx_id = 'UnzerPaymentPS_' . substr(md5(uniqid(rand(), true)), 0, 25) . '_' .substr(md5(__PS_BASE_URI__), 0, 25);
+        }
+        if (isset($this->context->controller->php_self) && $this->context->controller->php_self == 'order') {
             $this->context->controller->registerJavascript(
-                'unzerpayment.js',
-                'modules/'.$this->name.'/views/js/unzerpayment.js',
-                ['position' => 'bottom', 'priority' => 100, 'server' => 'local']
+                'unzerpayment_static.js',
+                'https://static.unzer.com/v1/checkout.js',
+                ['position' => 'bottom', 'priority' => 120, 'server' => 'remote']
+            );
+            $this->context->controller->registerJavascript(
+                'unzerpayment_tmx.js',
+                'https://h.online-metrix.net/fp/tags.js?org_id=363t8kgq&session_id=' . $this->context->cookie->unz_tmx_id,
+                ['position' => 'bottom', 'priority' => 122, 'server' => 'remote']
             );
             $this->context->controller->registerStylesheet(
-                'unzerpayment.css',
-                'modules/'.$this->name.'/views/css/unzerpayment.css'
+                'unzerpayment_static.css',
+                'https://static.unzer.com/v1/unzer.css'
             );
-            \Media::addJsDef(
-                [
-                    'unzerAjaxUrl' => Context::getContext()->link->getModuleLink(
-                        $this->name,
-                        'ajax'
-                    ),
-                    'unzerSuccessUrl' => \UnzerPayment\Classes\UnzerpaymentHelper::getSuccessUrl(),
-                    'unzerErrorUrl' => \UnzerPayment\Classes\UnzerpaymentHelper::getFailureUrl(),
-                    'unzer_transaction_canceled_by_user' => $this->l('Transaction canceled by user.'),
-                    'unzer_paypage_generic_error' => $this->l('There has been an error, please try another payment method.'),
-                ]
-            );
+        }
+        $this->context->controller->registerJavascript(
+            'unzerpayment.js',
+            'modules/'.$this->name.'/views/js/unzerpayment.js',
+            ['position' => 'bottom', 'priority' => 100, 'server' => 'local']
+        );
+        $this->context->controller->registerStylesheet(
+            'unzerpayment.css',
+            'modules/'.$this->name.'/views/css/unzerpayment.css'
+        );
+        \Media::addJsDef(
+            [
+                'unzerAjaxUrl' => Context::getContext()->link->getModuleLink(
+                    $this->name,
+                    'ajax'
+                ),
+                'unzerSuccessUrl' => \UnzerPayment\Classes\UnzerpaymentHelper::getSuccessUrl(),
+                'unzerErrorUrl' => \UnzerPayment\Classes\UnzerpaymentHelper::getFailureUrl(),
+                'unzer_transaction_canceled_by_user' => $this->l('Transaction canceled by user.'),
+                'unzer_paypage_generic_error' => $this->l('There has been an error, please try another payment method.'),
+            ]
+        );
     }
 
     /**

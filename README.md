@@ -1,6 +1,6 @@
 # UnzerPayment
 
-Unzer payment integration for PrestaShop 1.7.x and V8.x 
+Unzer payment integration for PrestaShop 1.7.x and V8.x
 
 ## Installation out of github
 
@@ -10,11 +10,15 @@ Unzer payment integration for PrestaShop 1.7.x and V8.x
 
 ## Changelog
 
+# v1.0.3
+* Optimization backend setting for Test Mode
+* Improved TMX Session ID generation
+
 # v1.0.2
 * Updated readme.io file
 
 # v1.0.1
-* Improvement automatic webhook registration after credentials update 
+* Improvement automatic webhook registration after credentials update
 
 # v1.0.0
 * Initial release
