@@ -176,7 +176,7 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                     Context::getContext()->currency->iso_code,
                     $successURL
                 );
-                $threatMetrixId = 'UnzerPaymentPS_' . $orderId;
+                $threatMetrixId = isset(Context::getContext()->cookie->unz_tmx_id) ? Context::getContext()->cookie->unz_tmx_id : null;
 
                 $metadata = new \UnzerSDK\Resources\Metadata();
                 foreach ($this->module->getMetaData() as $key => $val) {

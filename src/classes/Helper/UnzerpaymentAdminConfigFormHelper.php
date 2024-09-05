@@ -135,22 +135,17 @@ class UnzerpaymentAdminConfigFormHelper
         $advanced_inputs = [];
         $advanced_inputs[] =
             array(
-                'type' => 'switch',
-                'label' => $module->l('Test mode (no charges)', self::TRANSLATIONKEY),
+                'type' => 'select',
+                'label' => $module->l('Mode', self::TRANSLATIONKEY),
                 'name' => 'UNZERPAYMENT_TESTMODE',
-                'is_bool' => true,
-                'values' => array(
-                    array(
-                        'id' => 'active_testmode',
-                        'value' => true,
-                        'label' => $module->l('Test mode', self::TRANSLATIONKEY)
+                'options' => array(
+                    'query' => array(
+                        array('key' => '1', 'name' => $module->l('Test mode (no charges)', self::TRANSLATIONKEY)),
+                        array('key' => '0', 'name' => $module->l('Live mode', self::TRANSLATIONKEY)),
                     ),
-                    array(
-                        'id' => 'inactive_testmode',
-                        'value' => '0',
-                        'label' => $module->l('Live mode', self::TRANSLATIONKEY)
-                    )
-                )
+                    'id' => 'key',
+                    'name' => 'name'
+                ),
             );
         /*
         $advanced_inputs[] =
