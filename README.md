@@ -10,6 +10,9 @@ Unzer payment integration for PrestaShop 1.7.x and V8.x
 
 ## Changelog
 
+# v1.0.4
+* Fix variants in basket creation
+
 # v1.0.3
 * Optimization backend setting for Test Mode
 * Improved TMX Session ID generation
@@ -22,3 +25,4 @@ Unzer payment integration for PrestaShop 1.7.x and V8.x
 
 # v1.0.0
 * Initial release
+

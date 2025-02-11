@@ -60,7 +60,7 @@ class Unzerpayment extends PaymentModule
         $this->name = 'unzerpayment';
         $this->tab = 'payments_gateways';
         $this->author = 'Unzer GmbH';
-        $this->version = '1.0.3';
+        $this->version = '1.0.4';
         $this->need_instance = 1;
         $this->module_key = '';
         $this->bootstrap = true;
