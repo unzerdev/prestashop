@@ -103,8 +103,12 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                 $tmpSum = 0;
                 foreach (Context::getContext()->cart->getProducts() as $product) {
                     $tmpSum += UnzerpaymentHelper::prepareAmountValue($product['price_wt']) * $product['quantity'];
+                    $basketItemReferenceId = 'Item-' . $product['id_product'];
+                    if (isset($product['id_product_attribute']) && $product['id_product_attribute'] != '') {
+                        $basketItemReferenceId.= '-' . $product['id_product_attribute'];
+                    }
                     $basketItem = (new \UnzerSDK\Resources\EmbeddedResources\BasketItem())
-                        ->setBasketItemReferenceId('Item-' . $product['id_product'])
+                        ->setBasketItemReferenceId($basketItemReferenceId)
                         ->setQuantity($product['quantity'])
                         ->setUnit('m')
                         ->setAmountPerUnitGross(UnzerpaymentHelper::prepareAmountValue($product['price_wt']))
