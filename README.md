@@ -10,6 +10,9 @@ Unzer payment integration for PrestaShop 1.7.x and V8.x
 
 ## Changelog
 
+# v1.1.0
+* Added Direct Transfer localization and icon
+
 # v1.0.4
 * Fix variants in basket creation
 
@@ -25,4 +28,3 @@ Unzer payment integration for PrestaShop 1.7.x and V8.x
 
 # v1.0.0
 * Initial release
-
