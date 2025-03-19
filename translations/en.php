@@ -25,6 +25,7 @@ $_MODULE['<{unzerpayment}prestashop>unzerpayment_120bdbb7157b1050d6e74dc25dd8e6e
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_c2b64e3eed84e89d4ea07cdfc69cfc52'] = 'Bancontact';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_a0a058baaeef16e88f6bd2ee36c03f6f'] = 'PayPal';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_b3eb844216217d236d050c7171fc4a59'] = 'Apple Pay';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_9826da6e585a6816eb41f914b03c83a0'] = 'Direct Transfer';
 
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_62b1f47878dc167729e871cd9cbe8980'] = 'Paylater Direct Debit';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_848bb45c21d69921bf10df30daa9a39e'] = 'Paylater Installment';

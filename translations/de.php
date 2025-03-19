@@ -24,6 +24,7 @@ $_MODULE['<{unzerpayment}prestashop>unzerpayment_962d13fd2a584598d5f68c4408169e2
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_c2c027d8c62500300145c3043546d4c6'] = 'EPS';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_eaa79f7e820259631a6491113d12cbee'] = 'Klarna';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_5dd2199ad68327cc76d583b057aee7d5'] = 'Kreditkarte';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_9826da6e585a6816eb41f914b03c83a0'] = 'Direkt-Überweisung';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_e0f764e23bc8c486ca18c6378291afe3'] = 'Giropay';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_5b719fbf5c81afb81435f6a9cc4766f4'] = 'Vorkasse';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_e5f96ae00443877315fbb64fd3d90005'] = 'Rechnung';
