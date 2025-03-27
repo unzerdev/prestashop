@@ -10,6 +10,9 @@ Unzer payment integration for PrestaShop 1.7.x and V8.x
 
 ## Changelog
 
+# v1.1.1
+* Icon Update iDeal
+
 # v1.1.0
 * Added Direct Transfer localization and icon
 
