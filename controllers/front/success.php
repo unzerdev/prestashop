@@ -26,15 +26,20 @@ class UnzerpaymentSuccessModuleFrontController extends ModuleFrontController
 
     public function postProcess()
     {
-        if (!isset(Context::getContext()->cookie->UnzerPaymentId)) {
+        if (!isset(Context::getContext()->cookie->UnzerPaypageId)) {
             UnzerpaymentLogger::getInstance()->addLog('Call with missing UnzerPaymentId', 2, false);
+            $this->errorRedirect();
+        }
+
+        if (!isset(Context::getContext()->cookie->UnzerSelectedPaymentMethod)) {
+            UnzerpaymentLogger::getInstance()->addLog('Call with missing UnzerSelectedPaymentMethod', 2, false);
             $this->errorRedirect();
         }
 
         // check for already existing order, especially for chrome where duplicate calls might happen
         if ((int)Tools::getValue('cuid') != Context::getContext()->customer->id) {
             UnzerpaymentLogger::getInstance()->addLog('Customer ID missing or not valid', 2, false);
-            $this->errorRedirect('');
+            $this->errorRedirect();
         }
         if (UnzerpaymentHelper::usersCartAndOrderExists((int)Tools::getValue('cuid'), (int)Tools::getValue('caid'))) {
             $order = Order::getByCartId((int)Tools::getValue('caid'));
@@ -48,16 +53,17 @@ class UnzerpaymentSuccessModuleFrontController extends ModuleFrontController
         }
 
         $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance();
-        $payment = $unzer->fetchPayment(Context::getContext()->cookie->UnzerPaymentId);
+        $paypage = $unzer->fetchPaypageV2(Context::getContext()->cookie->UnzerPaypageId);
+        $payment = $paypage->getPayments()[0];
 
         UnzerpaymentLogger::getInstance()->addLog('Fetched payment', 3, false, [$payment]);
 
-        if (!UnzerpaymentHelper::isValidState($payment->getState())) {
+        if (!UnzerpaymentHelper::isValidState($payment->getTransactionStatus())) {
             UnzerpaymentLogger::getInstance()->addLog('Invalid payment state', 2, false, [$payment]);
             $this->errorRedirect();
         }
 
-        if ($payment->getState() == \UnzerSDK\Constants\PaymentState::STATE_COMPLETED) {
+        if ($payment->getTransactionStatus() == \UnzerSDK\Constants\TransactionStatus::STATUS_SUCCESS) {
             $orderStatus = Configuration::get('UNZERPAYMENT_STATUS_CAPTURED');
         } else {
             $orderStatus = Configuration::get('UNZERPAYMENT_STATUS_PLACED');
@@ -65,15 +71,15 @@ class UnzerpaymentSuccessModuleFrontController extends ModuleFrontController
 
         $amount = Tools::ps_round(Context::getContext()->cart->getOrderTotal(true, Cart::BOTH), 2);
 
-        $unzerPaymentInstance = \UnzerSDK\Services\ResourceService::getTypeInstanceFromIdString(
-            $payment->getPaymentType()->getId()
+        $paymentMethodName = \Unzerpayment\Classes\UnzerpaymentClient::guessPaymentMethodClass(
+                Context::getContext()->cookie->UnzerSelectedPaymentMethod
         );
-        $paymentMethodName = UnzerpaymentHelper::getPaymentClassNameByFullName(
-            $unzerPaymentInstance
+        $paymentMethodName = \UnzerPayment\Classes\UnzerpaymentHelper::getMappedPaymentName(
+            $paymentMethodName
         );
 
         try {
-            UnzerpaymentLogger::getInstance()->addLog('Validating order', 3, false, ['transaction_id' => Context::getContext()->cookie->UnzerPaymentId]);
+            UnzerpaymentLogger::getInstance()->addLog('Validating order', 3, false, ['transaction_id' => $payment->getPaymentId()]);
             $this->module->validateOrder(
                 $this->context->cart->id,
                 $orderStatus,
@@ -81,7 +87,7 @@ class UnzerpaymentSuccessModuleFrontController extends ModuleFrontController
                 $paymentMethodName . ' (' . $this->module->displayName . ')',
                 '',
                 [
-                    'transaction_id' => Context::getContext()->cookie->UnzerPaymentId,
+                    'transaction_id' => $payment->getPaymentId(),
                 ],
                 $this->context->currency->id,
                 false,
@@ -93,7 +99,7 @@ class UnzerpaymentSuccessModuleFrontController extends ModuleFrontController
         }
 
         $metadata = $unzer->fetchMetadata(
-            $payment->getMetadata()->getId()
+            Context::getContext()->cookie->UnzerMetadataId
         );
         $metadata->addMetadata(
             'shopOrderId', $this->module->currentOrder
@@ -111,7 +117,10 @@ class UnzerpaymentSuccessModuleFrontController extends ModuleFrontController
             UnzerpaymentLogger::getInstance()->addLog('Could not update metadata', 1, $e, [$metadata]);
         }
 
+        unset(Context::getContext()->cookie->UnzerPaypageId);
+        unset(Context::getContext()->cookie->UnzerMetadataId);
         unset(Context::getContext()->cookie->UnzerPaymentId);
+        unset(Context::getContext()->cookie->UnzerSelectedPaymentMethod);
 
         $confirmationURL = 'index.php?controller=order-confirmation&id_cart=' .
             (int)$this->context->cart->id .
@@ -126,10 +135,14 @@ class UnzerpaymentSuccessModuleFrontController extends ModuleFrontController
     protected function errorRedirect($msg = 'There has been an error processing your order.', $pagecontroller = 'cart')
     {
         if ($msg != '') {
-            $this->errors[] = $this->module->l($msg);
+            $this->warning[] = $this->module->l($msg);
+        }
+        $request = null;
+        if ($pagecontroller == 'cart') {
+            $request = ['action' => 'show'];
         }
         $this->PrestaShopRedirectWithNotifications(
-            $this->context->link->getPageLink($pagecontroller)
+            $this->context->link->getPageLink($pagecontroller, null, null, $request)
         );
     }
 

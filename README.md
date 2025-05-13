@@ -1,6 +1,6 @@
 # UnzerPayment
 
-Unzer payment integration for PrestaShop 1.7.x and V8.x
+Unzer payment integration for PrestaShop 1.7.x, V8.x and V9 (Beta)
 
 ## Installation out of github
 
@@ -9,6 +9,10 @@ Unzer payment integration for PrestaShop 1.7.x and V8.x
 3. Switch to admin and install the plugin using the PrestaShop plugin manager and configure it as you need.
 
 ## Changelog
+
+# v1.2.0
+* Update to paypage V2
+* Changes for PrestaShop V9 Beta compatibility
 
 # v1.1.1
 * Icon Update iDeal

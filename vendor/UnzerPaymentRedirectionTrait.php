@@ -51,7 +51,7 @@ trait UnzerPaymentRedirectionTrait
     /**
      * @return false|mixed
      */
-    public function PrestaShopRedirectWithNotifications()
+    public function PrestaShopRedirectWithNotifications($url)
     {
         $notifications = json_encode(array(
             'error' => $this->errors,
@@ -68,8 +68,7 @@ trait UnzerPaymentRedirectionTrait
         } else {
             setcookie('notifications', $notifications);
         }
-
-        return call_user_func_array(array('Tools', 'redirect'), func_get_args());
+        return \Tools::redirect($url);
     }
 
     /**

@@ -42,26 +42,56 @@ $(document).ready(function ($) {
                     return false;
                 }
                 var successURL = data.successURL;
-                var checkout = new window.checkout(data.token, {locale: prestashop.language.locale});
-                checkout.init().then(function() {
-                    checkout.open();
-                    checkout.abort(function() {
-                        if ($("#notifications .notifications-container").length > 0) {
-                            $("#notifications .notifications-container").html(
-                                '<div class="alert alert-danger">' + unzer_transaction_canceled_by_user + '</div>'
-                            );
-                        }
-                        if ($("#payment-confirmation .btn-primary").length > 0) {
-                            $("#payment-confirmation .btn-primary").attr("disabled", false).removeClass('disabled');
-                        }
-                    });
-                    checkout.success(function(data) {
-                        window.location.href = successURL;
-                    });
-                    checkout.error(function(error) {
-                        window.location.href = unzerErrorUrl;
-                    });
+                var unzerPubKey = data.pubKey;
+                var unzerPayPageId = data.token;
+                var unzerClickToPay = data.ctp ? '' : 'disableCTP';
+
+                if (document.getElementById("unzer-container") === null) {
+                    $("#checkout-payment-step").append('<div id="unzer-container"></div>');
+                }
+
+                const unzerContainer = document.getElementById("unzer-container");
+                unzerContainer.innerHTML = `
+                    <unzer-payment publicKey="${unzerPubKey}">
+                        <unzer-pay-page
+                            id="unzer-checkout"
+                            payPageId="${unzerPayPageId}"
+                            ${unzerClickToPay}
+                        ></unzer-pay-page>
+                    </unzer-payment>
+                `;
+
+                const checkout = document.getElementById("unzer-checkout");
+
+                // Subscribe to the abort event
+                checkout.abort(function () {
+                    if ($("#notifications .notifications-container").length > 0) {
+                        $("#notifications .notifications-container").html(
+                            '<div class="alert alert-danger">' + unzer_transaction_canceled_by_user + '</div>'
+                        );
+                    }
+                    if ($("#payment-confirmation .btn-primary").length > 0) {
+                        $("#payment-confirmation .btn-primary").attr("disabled", false).removeClass('disabled');
+                    }
                 });
+
+                // Subscribe to the success event
+                checkout.success(function (data) {
+                    window.location.href = successURL;
+                });
+
+                // Subscribe to the error event
+                checkout.error(function (error) {
+                    console.log(error);
+                    alert(error);
+                    return;
+                    window.location.href = unzerErrorUrl;
+                });
+
+                console.log('opening layer');
+                // Render the Embedded Payment Page overlay
+                checkout.open();
+
             },
             'json'
         )

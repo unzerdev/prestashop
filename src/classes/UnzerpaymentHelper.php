@@ -216,8 +216,8 @@ class UnzerpaymentHelper
         return in_array(
             $state,
             [
-                \UnzerSDK\Constants\PaymentState::STATE_PENDING,
-                \UnzerSDK\Constants\PaymentState::STATE_COMPLETED
+                \UnzerSDK\Constants\TransactionStatus::STATUS_SUCCESS,
+                \UnzerSDK\Constants\TransactionStatus::STATUS_PENDING
             ]
         );
     }
@@ -360,6 +360,45 @@ class UnzerpaymentHelper
     }
 
     /**
+     * @param $price
+     * @param $idCurrency
+     * @param $no_utf8
+     * @param $context
+     * @return string
+     */
+    public static function displayPrice($price, $idCurrency = null, $no_utf8 = false, $context = null)
+    {
+        // Währung ermitteln
+        if (!$idCurrency) {
+            $context = \Context::getContext();
+            $idCurrency = $context->currency->id;
+        }
+
+        $currency = new \Currency($idCurrency);
+
+        // PrestaShop 9: Verwende LocaleService
+        try {
+            // Prüfen ob Service Locator und LocaleInterface verfügbar sind
+            if (class_exists('\PrestaShop\PrestaShop\Adapter\ServiceLocator')) {
+                $localeService = \PrestaShop\PrestaShop\Adapter\ServiceLocator::get('\\PrestaShop\\PrestaShop\\Core\\Localization\\LocaleInterface');
+                if ($localeService && method_exists($localeService, 'formatPrice')) {
+                    return $localeService->formatPrice($price, $currency->iso_code);
+                }
+            }
+        } catch (\Throwable $e) {
+            // Ignoriere und nutze fallback
+        }
+
+        // PrestaShop 8: Verwende Tools::displayPrice
+        if (class_exists('\Tools') && method_exists('\Tools', 'displayPrice')) {
+            return \Tools::displayPrice($price, $idCurrency, $no_utf8, $context);
+        }
+
+        // Fallback: einfache Formatierung
+        return number_format($price, 2) . ' ' . $currency->iso_code;
+    }
+
+    /**
      * @param $payment_id
      * @param \Order $order
      * @return array
@@ -408,9 +447,9 @@ class UnzerpaymentHelper
                 $return['type'] = $transactionTypes[ $class ] ?? $class;
                 $return['time'] = $transaction->getDate();
                 if ( method_exists( $transaction, 'getAmount' ) && method_exists( $transaction, 'getCurrency' ) ) {
-                    $return['amount'] = \Tools::displayPrice( $transaction->getAmount(), \Currency::getIdByIsoCode($transaction->getCurrency()) );
+                    $return['amount'] = self::displayPrice( $transaction->getAmount(), \Currency::getIdByIsoCode($transaction->getCurrency()) );
                 } elseif ( isset( $return['amount'] ) ) {
-                    $return['amount'] = \Tools::displayPrice( $return['amount'], \Currency::getIdByIsoCode($currency) );
+                    $return['amount'] = self::displayPrice( $return['amount'], \Currency::getIdByIsoCode($currency) );
                 }
                 $status           = $transaction->isSuccess() ? 'success' : 'error';
                 $status           = $transaction->isPending() ? 'pending' : $status;
@@ -432,10 +471,10 @@ class UnzerpaymentHelper
             'cartID'            => $order->id_cart,
             'paymentBaseMethod' => \UnzerSDK\Services\IdService::getResourceTypeFromIdString($payment->getPaymentType()->getId()),
             'shortID'           => $payment->getInitialTransaction()->getShortId(),
-            'amount'            => \Tools::displayPrice( $payment->getAmount()->getTotal(), \Currency::getIdByIsoCode($payment->getAmount()->getCurrency())  ),
-            'charged'           => \Tools::displayPrice( $payment->getAmount()->getCharged(), \Currency::getIdByIsoCode($payment->getAmount()->getCurrency())  ),
-            'cancelled'         => \Tools::displayPrice( $payment->getAmount()->getCanceled(), \Currency::getIdByIsoCode($payment->getAmount()->getCurrency())  ),
-            'remaining'         => \Tools::displayPrice( $payment->getAmount()->getRemaining(), \Currency::getIdByIsoCode($payment->getAmount()->getCurrency())  ),
+            'amount'            => self::displayPrice( $payment->getAmount()->getTotal(), \Currency::getIdByIsoCode($payment->getAmount()->getCurrency())  ),
+            'charged'           => self::displayPrice( $payment->getAmount()->getCharged(), \Currency::getIdByIsoCode($payment->getAmount()->getCurrency())  ),
+            'cancelled'         => self::displayPrice( $payment->getAmount()->getCanceled(), \Currency::getIdByIsoCode($payment->getAmount()->getCurrency())  ),
+            'remaining'         => self::displayPrice( $payment->getAmount()->getRemaining(), \Currency::getIdByIsoCode($payment->getAmount()->getCurrency())  ),
             'remainingPlain'    => $payment->getAmount()->getRemaining(),
             'transactions'      => $transactions,
             'status'            => $payment->getStateName(),
