@@ -60,7 +60,7 @@ class Unzerpayment extends PaymentModule
         $this->name = 'unzerpayment';
         $this->tab = 'payments_gateways';
         $this->author = 'Unzer GmbH';
-        $this->version = '1.1.1';
+        $this->version = '1.2.0';
         $this->need_instance = 1;
         $this->module_key = '';
         $this->bootstrap = true;
@@ -361,6 +361,7 @@ class Unzerpayment extends PaymentModule
         $this->l('paypal');
         $this->l('applepay');
         $this->l('openbanking-pis');
+        $this->l('clicktopay');
     }
 
 }

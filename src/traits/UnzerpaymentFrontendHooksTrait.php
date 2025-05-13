@@ -26,6 +26,12 @@ trait UnzerpaymentFrontendHooksTrait
      */
     public function hookHeader()
     {
+        /**
+         * Have to do it the hardcoded way as PrestaShop currently does not support "type=module" for registerJavaScript()
+         */
+        if (isset($this->context->controller->php_self) && $this->context->controller->php_self == 'order') {
+            return '<script type="module" src="https://static-v2.unzer.com/v2/ui-components/index.js"></script>';
+        }
     }
 
     /**
@@ -35,22 +41,6 @@ trait UnzerpaymentFrontendHooksTrait
     {
         if (!isset($this->context->cookie->unz_tmx_id)) {
             $this->context->cookie->unz_tmx_id = 'UnzerPaymentPS_' . substr(md5(uniqid(rand(), true)), 0, 25) . '_' .substr(md5(__PS_BASE_URI__), 0, 25);
-        }
-        if (isset($this->context->controller->php_self) && $this->context->controller->php_self == 'order') {
-            $this->context->controller->registerJavascript(
-                'unzerpayment_static.js',
-                'https://static.unzer.com/v1/checkout.js',
-                ['position' => 'bottom', 'priority' => 120, 'server' => 'remote']
-            );
-            $this->context->controller->registerJavascript(
-                'unzerpayment_tmx.js',
-                'https://h.online-metrix.net/fp/tags.js?org_id=363t8kgq&session_id=' . $this->context->cookie->unz_tmx_id,
-                ['position' => 'bottom', 'priority' => 122, 'server' => 'remote']
-            );
-            $this->context->controller->registerStylesheet(
-                'unzerpayment_static.css',
-                'https://static.unzer.com/v1/unzer.css'
-            );
         }
         $this->context->controller->registerJavascript(
             'unzerpayment.js',
@@ -95,6 +85,9 @@ trait UnzerpaymentFrontendHooksTrait
 
         foreach (UnzerpaymentClient::getAvailablePaymentMethods() as $paymentMethod) {
             $paymentType = $paymentMethod->type;
+            if ($paymentType == 'clicktopay') {
+                continue;
+            }
             $currencyOK = false;
             if (isset($paymentMethod->supports[0]->currency)) {
                 foreach ($paymentMethod->supports[0]->currency as $currency_code) {

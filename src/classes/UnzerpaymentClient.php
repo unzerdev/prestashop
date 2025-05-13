@@ -106,4 +106,23 @@ class UnzerpaymentClient extends \UnzerSDK\Unzer {
         }
     }
 
+    public static function guessPaymentMethodClass($paymentType)
+    {
+        $newParts = [];
+        $paymentType = str_replace('-', '_', $paymentType);
+        $parts = explode('_', $paymentType);
+        foreach ($parts as $part) {
+            $newParts[] = ucfirst($part);
+        }
+        $className = join('', $newParts);
+        if (class_exists("UnzerSDK\Resources\PaymentTypes\\" . $className)) {
+            if ($className == 'OpenbankingPis') {
+                return strtolower($className);
+            }
+            return lcfirst($className);
+        }
+        return $paymentType;
+    }
+
+
 }

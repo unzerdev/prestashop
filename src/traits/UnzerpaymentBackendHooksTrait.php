@@ -30,7 +30,9 @@ trait UnzerpaymentBackendHooksTrait
     public function hookBackOfficeHeader()
     {
         if (Tools::getValue('module_name') == $this->name) {
-            $this->context->controller->addJquery();
+            if (_PS_VERSION_ < 9) {
+                $this->context->controller->addJquery();
+            }
             $this->context->controller->addJS($this->_path.'views/js/admin_1.0.0.js');
             $this->context->controller->addCSS($this->_path.'views/css/admin_1.0.0.css');
         } elseif (Tools::getValue('controller') == 'AdminOrders') {
@@ -44,7 +46,9 @@ trait UnzerpaymentBackendHooksTrait
     public function hookActionAdminControllerSetMedia()
     {
         if (Tools::getValue('configure') == $this->name) {
-            $this->context->controller->addJquery();
+            if (_PS_VERSION_ < 9) {
+                $this->context->controller->addJquery();
+            }
             $this->context->controller->addJS($this->_path.'views/js/admin_1.0.0.js');
             $this->context->controller->addCSS($this->_path.'views/css/admin_1.0.0.css');
         }

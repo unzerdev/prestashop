@@ -30,9 +30,13 @@ class UnzerpaymentFailureModuleFrontController extends ModuleFrontController
 
     protected function errorRedirect($msg = 'There has been an error processing your order.', $pagecontroller = 'cart')
     {
+        $request = null;
+        if ($pagecontroller == 'cart') {
+            $request = ['action' => 'show'];
+        }
         $this->errors[] = $this->module->l($msg);
         $this->PrestaShopRedirectWithNotifications(
-            $this->context->link->getPageLink($pagecontroller)
+            $this->context->link->getPageLink($pagecontroller, null, null, $request)
         );
     }
 

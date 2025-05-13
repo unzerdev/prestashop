@@ -62,8 +62,18 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                     );
                 }
 
-                $unzerCustomer = (new \UnzerSDK\Resources\Customer())
-                    ->setCustomerId($customer->id)
+                $customerId = !Context::getContext()->customer->logged ? ('PS-Guest-' . $customer->id) : ('PS-' . $customer->id);
+
+                $need_customer_update = false;
+                try {
+                    $unzerCustomer = $unzer->fetchCustomer($customerId);
+                    $need_customer_update = true;
+                } catch (\Exception $e) {
+                    $unzerCustomer = new \UnzerSDK\Resources\Customer();
+                }
+
+                $unzerCustomer
+                    ->setCustomerId($customerId)
                     ->setFirstname($addressBilling->firstname)
                     ->setLastname($addressBilling->lastname)
                     ->setCompany($addressBilling->company)
@@ -88,9 +98,12 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                         ->setSalutation(\UnzerSDK\Constants\Salutations::UNKNOWN);
                 }
 
-                $unzer->createOrUpdateCustomer(
-                    $unzerCustomer
-                );
+                if ($need_customer_update) {
+                    $unzer->updateCustomer($unzerCustomer);
+                } else {
+                    $unzer->createCustomer($unzerCustomer);
+                }
+
                 $orderId = UnzerPaymentHelper::getPreOrderId();
 
                 $basket = (new \UnzerSDK\Resources\Basket())
@@ -142,7 +155,7 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                     $basketItems[] = $basketItem;
                 }
 
-                $difference = Context::getContext()->cart->getOrderTotal() - $tmpSum;
+                $difference = ((float)Context::getContext()->cart->getOrderTotal()*100 - (float)$tmpSum*100)/100;
                 if ($difference > 0) {
                     $basketItem = (new \UnzerSDK\Resources\EmbeddedResources\BasketItem())
                         ->setBasketItemReferenceId('add-shipping-delta')
@@ -168,19 +181,7 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                     );
                 }
 
-                $successURL = UnzerpaymentHelper::getSuccessUrl(
-                    [
-                        'caid' => Context::getContext()->cart->id,
-                        'cuid' => Context::getContext()->customer->id,
-                    ]
-                );
-
-                $paypage = new \UnzerSDK\Resources\PaymentTypes\Paypage(
-                    Context::getContext()->cart->getOrderTotal(),
-                    Context::getContext()->currency->iso_code,
-                    $successURL
-                );
-                $threatMetrixId = isset(Context::getContext()->cookie->unz_tmx_id) ? Context::getContext()->cookie->unz_tmx_id : null;
+                $unzer->createBasket($basket);
 
                 $metadata = new \UnzerSDK\Resources\Metadata();
                 foreach ($this->module->getMetaData() as $key => $val) {
@@ -192,76 +193,104 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                         $metadata->addMetadata($key, $val);
                     }
                 }
+                $unzer->createMetadata($metadata);
 
-                $paypage->setShopName(Context::getContext()->shop->name)
-                    ->setOrderId($orderId)
-                    ->setAdditionalAttribute('riskData.threatMetrixId', $threatMetrixId)
-                    ->setAdditionalAttribute('riskData.customerGroup', 'NEUTRAL')
-                    ->setAdditionalAttribute('riskData.customerId', Context::getContext()->customer->id)
-                    ->setAdditionalAttribute('riskData.confirmedAmount', UnzerpaymentHelper::getCustomersTotalOrderAmount())
-                    ->setAdditionalAttribute('riskData.confirmedOrders', UnzerpaymentHelper::getCustomersTotalOrders())
-                    ->setAdditionalAttribute('riskData.registrationLevel', Context::getContext()->customer->logged ? '1' : '0')
-                    ->setAdditionalAttribute('riskData.registrationDate', UnzerpaymentHelper::getCustomersRegistrationDate())
-                    ;
+                $resources = new \UnzerSDK\Resources\EmbeddedResources\Paypage\Resources(
+                    $unzerCustomer->getId(),
+                    $basket->getId(),
+                    $metadata->getId()
+                );
 
-                foreach (UnzerpaymentHelper::getInactivePaymentMethods() as $inactivePaymentMethod) {
-                    $paypage->addExcludeType($inactivePaymentMethod);
-                }
+                $paymentMethodClass = UnzerpaymentClient::guessPaymentMethodClass($selectedPaymentMethod);
+                $currentMethodConfig = new \UnzerSDK\Resources\EmbeddedResources\Paypage\PaymentMethodConfig(true, 1);
+                $paymentMethodsConfig = (new \UnzerSDK\Resources\EmbeddedResources\Paypage\PaymentMethodsConfigs())
+                    ->setDefault((new \UnzerSDK\Resources\EmbeddedResources\Paypage\PaymentMethodConfig())->setEnabled(false))
+                    ->addMethodConfig(
+                        $paymentMethodClass,
+                        $currentMethodConfig
+                    );
 
-                foreach (UnzerpaymentClient::getAvailablePaymentMethods() as $availablePaymentMethod) {
-                    if ($selectedPaymentMethod != $availablePaymentMethod->type) {
-                        $paypage->addExcludeType($availablePaymentMethod->type);
-                    }
-                }
-
-                $cssArray = UnzerpaymentHelper::getCustomizedCssArray();
-
-                if (sizeof($cssArray) > 0) {
-                    $paypage->setCss(
-                        $cssArray
+                if (Context::getContext()->customer->logged && in_array($paymentMethodClass, ['card', 'sepaDirectDebit', 'paypal'])) {
+                    $currentMethodConfig->setCredentialOnFile(true);
+                    $paymentMethodsConfig->addMethodConfig(
+                        $paymentMethodClass,
+                        $currentMethodConfig
                     );
                 }
 
-                UnzerpaymentLogger::getInstance()->addLog('initPayPage Request', 3, false, [
-                    'paypage' => $paypage,
-                    'unzerCustomer' => $unzerCustomer,
-                    'basket' => $basket,
-                    'metadata' => $metadata,
-                    'tmpsum' => $tmpSum
-                ]);
-
-                if (UnzerpaymentHelper::getPaymentMethodChargeMode($selectedPaymentMethod) == 'authorize' || UnzerpaymentHelper::isSandboxMode()) {
-                    try {
-                        $unzer->initPayPageAuthorize($paypage, $unzerCustomer, $basket, $metadata);
-                    } catch (\Exception $e) {
-                        UnzerpaymentLogger::getInstance()->addLog('initPayPageAuthorize Error', 1, $e, [
-                            'paypage' => $paypage,
-                            'unzerCustomer' => $unzerCustomer,
-                            'basket' => $basket,
-                            'metadata' => $metadata
-                        ]);
-                    }
-                } else {
-                    try {
-                        $unzer->initPayPageCharge($paypage, $unzerCustomer, $basket, $metadata);
-                    } catch (\Exception $e) {
-                        UnzerpaymentLogger::getInstance()->addLog('initPayPageCharge Error', 1, $e, [
-                            'paypage' => $paypage,
-                            'unzerCustomer' => $unzerCustomer,
-                            'basket' => $basket,
-                            'metadata' => $metadata
-                        ]);
+                if ($paymentMethodClass == 'card') {
+                    if (Configuration::get('UNZERPAYMENT_PAYMENTYPE_STATUS_clicktopay') == '1') {
+                        $paymentMethodsConfig->addMethodConfig(
+                            'clicktopay',
+                            new \UnzerSDK\Resources\EmbeddedResources\Paypage\PaymentMethodConfig(true, 2)
+                        );
                     }
                 }
 
+                $risk = new \UnzerSDK\Resources\EmbeddedResources\RiskData();
+                $risk->setRegistrationLevel(Context::getContext()->customer->logged ? '1' : '0');
+                if (Context::getContext()->customer->logged) {
+                    $risk->setRegistrationDate(
+                        UnzerpaymentHelper::getCustomersRegistrationDate()
+                    );
+                    $risk->setConfirmedAmount(UnzerpaymentHelper::getCustomersTotalOrderAmount())
+                        ->setConfirmedOrders(UnzerpaymentHelper::getCustomersTotalOrders());
+
+                    if (UnzerpaymentHelper::getCustomersTotalOrders() > 3) {
+                        $risk->setCustomerGroup('TOP');
+                    } elseif (UnzerpaymentHelper::getCustomersTotalOrders() >= 1) {
+                        $risk->setCustomerGroup('GOOD');
+                    } else {
+                        $risk->setCustomerGroup('NEUTRAL');
+                    }
+                }
+
+                $paypage = new \UnzerSDK\Resources\V2\Paypage(Context::getContext()->cart->getOrderTotal(), Context::getContext()->currency->iso_code);
+                $paypage->setPaymentMethodsConfigs($paymentMethodsConfig);
+                $paypage->setResources($resources);
+                $paypage->setType("embedded");
+                $paypage->setMode(UnzerpaymentHelper::getPaymentMethodChargeMode($selectedPaymentMethod) == 'authorize' || UnzerpaymentHelper::isSandboxMode() ? 'authorize' : 'charge');
+
+                $redirectUrl = UnzerpaymentHelper::getSuccessUrl(
+                    [
+                        'caid' => Context::getContext()->cart->id,
+                        'cuid' => Context::getContext()->customer->id,
+                    ]
+                );
+
+                $paypage->setUrls(
+                    (new \UnzerSDK\Resources\EmbeddedResources\Paypage\Urls())
+                        ->setReturnSuccess($redirectUrl)
+                        ->setReturnFailure($redirectUrl)
+                        ->setReturnPending($redirectUrl)
+                        ->setReturnCancel($redirectUrl)
+                );
+
+                try {
+                    $unzer->createPaypage($paypage);
+                } catch (\Exception $exception) {
+                    UnzerpaymentLogger::getInstance()->addLog('createPaypage Error', 1, $exception, [
+                        'paypage' => $paypage,
+                        'unzerCustomer' => $unzerCustomer,
+                        'basket' => $basket,
+                        'metadata' => $metadata
+                    ]);
+                }
+
                 UnzerpaymentLogger::getInstance()->addLog('received page page token', 3, false, [
-                    'UnzerPaymentId' => $paypage->getPaymentId(),
+                    'UnzerPaymentId' => $paypage->getId(),
                     'token' => $paypage->getId(),
                 ]);
 
-                Context::getContext()->cookie->UnzerPaymentId = $paypage->getPaymentId();
+                Context::getContext()->cookie->UnzerPaypageId = $paypage->getId();
+                Context::getContext()->cookie->UnzerMetadataId = $metadata->getId();
+                Context::getContext()->cookie->UnzerSelectedPaymentMethod = $selectedPaymentMethod;
 
-                $return = ['token' => $paypage->getId(), 'successURL' => $successURL];
+                $return = [
+                    'token' => $paypage->getId(),
+                    'pubKey' => Configuration::get('UNZERPAYMENT_PUBLIC_KEY'),
+                    'successURL' => $redirectUrl,
+                    'ctp' => Configuration::get('UNZERPAYMENT_PAYMENTYPE_STATUS_clicktopay') == '1'];
             break;
         }
 

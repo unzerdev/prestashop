@@ -22,12 +22,12 @@
 <ul class="nav nav-tabs" role="tablist" id="unzertabs">
 	<li class="active"><a href="#unzer_configuration" role="tab" data-toggle="tab">{l s='Configuration' mod='unzerpayment'}</a></li>
 	<li><a href="#unzer_advanced" role="tab" data-toggle="tab">{l s='Advanced Settings' mod='unzerpayment'}</a></li>
-	<li><a href="#unzer_design" role="tab" data-toggle="tab">{l s='Design' mod='unzerpayment'}</a></li>
+	{* <li><a href="#unzer_design" role="tab" data-toggle="tab">{l s='Design' mod='unzerpayment'}</a></li> *}
 </ul>
 
 <div class="tab-content">
 	<div class="tab-pane active" id="unzer_configuration">{include file='./_configuration.tpl'}</div>
 	<div class="tab-pane" id="unzer_advanced">{include file='./_advanced.tpl'}</div>
-	<div class="tab-pane" id="unzer_design">{include file='./_design.tpl'}</div>
+	{* div class="tab-pane" id="unzer_design">{include file='./_design.tpl'}</div> *}
 </div>
 

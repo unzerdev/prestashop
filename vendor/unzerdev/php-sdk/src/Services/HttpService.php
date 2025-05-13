@@ -203,6 +203,7 @@ class HttpService
                     $errorId = null;
                 }
             }
+            error_log($response);
 
             throw new UnzerApiException($merchantMessage, $customerMessage, $code, $errorId);
         }

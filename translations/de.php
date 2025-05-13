@@ -34,6 +34,7 @@ $_MODULE['<{unzerpayment}prestashop>unzerpayment_120bdbb7157b1050d6e74dc25dd8e6e
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_c2b64e3eed84e89d4ea07cdfc69cfc52'] = 'Bancontact';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_a0a058baaeef16e88f6bd2ee36c03f6f'] = 'PayPal';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_b3eb844216217d236d050c7171fc4a59'] = 'Apple Pay';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_19bba0879cfc8536d27ea8b80f041520'] = 'Click to Pay';
 $_MODULE['<{unzerpayment}prestashop>transactions_04b68fd479aafdcd0aa300eb69d41f0f'] = 'Unzer Transaktionen';
 $_MODULE['<{unzerpayment}prestashop>transactions_bc30768048a7bbfd2d158d722c140c6d'] = 'Gesamtbetrag';
 $_MODULE['<{unzerpayment}prestashop>transactions_e5b6035a9fb97a40ca129f388279b742'] = 'Eingezogener Betrag';
