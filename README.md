@@ -10,6 +10,11 @@ Unzer payment integration for PrestaShop 1.7.x, V8.x and V9 (Beta)
 
 ## Changelog
 
+# v1.2.1
+* Added order reference to charge calls
+* Fix in webhook notification
+* Fix language setter bug in paypage
+
 # v1.2.0
 * Update to paypage V2
 * Changes for PrestaShop V9 Beta compatibility

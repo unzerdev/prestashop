@@ -45,12 +45,20 @@ class UnzerpaymentClient extends \UnzerSDK\Unzer {
     /**
      * @param $paymentId
      * @param $amount
+     * @param $order_id
+     * @param $invoice_id
      * @return bool
      */
-    public function performChargeOnAuthorization( $paymentId, $amount = null ) {
+    public function performChargeOnAuthorization( $paymentId, $amount = null, $order_id = null, $invoice_id = null ) {
         $charge = new Charge();
-        if ( $amount ) {
+        if ($amount) {
             $charge->setAmount($amount);
+        }
+        if ($order_id) {
+            $charge->setOrderId($order_id);
+        }
+        if ($invoice_id) {
+            $charge->setInvoiceId($invoice_id);
         }
         $chargeResult = false;
         try {

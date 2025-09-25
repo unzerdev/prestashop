@@ -20,6 +20,7 @@ if (!defined('_PS_VERSION_')) {
 require_once(__DIR__ . '/vendor/autoload.php');
 require_once(__DIR__ . '/vendor/UnzerPaymentRedirectionTrait.php');
 require_once(__DIR__ . '/src/classes/UnzerpaymentClient.php');
+require_once(__DIR__ . '/src/classes/UnzerpaymentCountryRestriction.php');
 require_once(__DIR__ . '/src/classes/UnzerpaymentHelper.php');
 require_once(__DIR__ . '/src/classes/UnzerpaymentLogger.php');
 require_once(__DIR__ . '/src/classes/Helper/UnzerpaymentAdminConfigFormHelper.php');
@@ -60,7 +61,7 @@ class Unzerpayment extends PaymentModule
         $this->name = 'unzerpayment';
         $this->tab = 'payments_gateways';
         $this->author = 'Unzer GmbH';
-        $this->version = '1.2.0';
+        $this->version = '1.2.1';
         $this->need_instance = 1;
         $this->module_key = '';
         $this->bootstrap = true;

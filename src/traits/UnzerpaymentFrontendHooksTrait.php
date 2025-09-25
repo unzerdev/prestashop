@@ -96,13 +96,18 @@ trait UnzerpaymentFrontendHooksTrait
                     }
                 }
             }
-            if ($currencyOK && \Configuration::get('UNZERPAYMENT_PAYMENTYPE_STATUS_' . $paymentType)) {
+            $addressBilling = new \Address((int)Context::getContext()->cart->id_address_invoice);
+            $countryOK = \Unzerpayment\Classes\UnzerpaymentCountryRestriction::isCountryAllowed(
+                $paymentType,
+                \Country::getIsoById((int) $addressBilling->id_country)
+            );
+            if ($countryOK && $currencyOK && \Configuration::get('UNZERPAYMENT_PAYMENTYPE_STATUS_' . $paymentType)) {
                 $this->context->smarty->assign('currentPaymentType', $paymentType);
                 $option = new \PrestaShop\PrestaShop\Core\Payment\PaymentOption();
                 $option->setModuleName($this->name)
                     ->setCallToActionText(\UnzerPayment\Classes\UnzerpaymentHelper::getMappedPaymentName($paymentType))
                     ->setLogo(
-                        Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/icons/' . strtolower($paymentType) . '.png')
+                        Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/icons/' . str_replace('-', '_', strtolower($paymentType)) . '.png')
                     )
                     ->setForm(
                         $this->context->smarty->fetch('module:unzerpayment/views/templates/front/paymentOption.tpl')

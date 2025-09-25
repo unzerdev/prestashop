@@ -45,6 +45,7 @@ $(document).ready(function ($) {
                 var unzerPubKey = data.pubKey;
                 var unzerPayPageId = data.token;
                 var unzerClickToPay = data.ctp ? '' : 'disableCTP';
+                var unzerLocale = data.unzerLocale;
 
                 if (document.getElementById("unzer-container") === null) {
                     $("#checkout-payment-step").append('<div id="unzer-container"></div>');
@@ -52,7 +53,7 @@ $(document).ready(function ($) {
 
                 const unzerContainer = document.getElementById("unzer-container");
                 unzerContainer.innerHTML = `
-                    <unzer-payment publicKey="${unzerPubKey}">
+                    <unzer-payment publicKey="${unzerPubKey}" locale="${unzerLocale}"">
                         <unzer-pay-page
                             id="unzer-checkout"
                             payPageId="${unzerPayPageId}"
