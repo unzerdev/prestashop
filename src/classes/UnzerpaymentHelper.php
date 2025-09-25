@@ -260,7 +260,7 @@ class UnzerpaymentHelper
      */
     public static function getOrderIdByTransactionId($transactionId)
     {
-        $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow(
+        $result = \Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow(
             'SELECT o.`id_order` FROM `' . _DB_PREFIX_ . 'order_payment` a
                JOIN `' . _DB_PREFIX_ . 'orders` o ON o.reference = a.order_reference
               WHERE a.`transaction_id` = "' . pSQL($$transactionId) . '"'

@@ -84,7 +84,11 @@ trait UnzerpaymentBackendHooksTrait
                 switch (Tools::getValue('unzer_action')) {
                     case 'unzer_capture':
                         $amount  = Tools::getValue('unzer_capture_amount') ? (float)Tools::getValue('unzer_capture_amount') : null;
-                        $unzer->performChargeOnAuthorization($transaction_id, $amount);
+                        $unzer->performChargeOnAuthorization(
+                            $transaction_id,
+                            $amount,
+                            $order->reference
+                        );
                         $redirect = true;
                         break;
                 }
@@ -218,7 +222,8 @@ trait UnzerpaymentBackendHooksTrait
                                 ]);
                                 $unzer->performChargeOnAuthorization(
                                     $transaction_id,
-                                    $payment->getAmount()->getRemaining()
+                                    $payment->getAmount()->getRemaining(),
+                                    $order->reference
                                 );
                             }
                         }

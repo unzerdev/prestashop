@@ -90,7 +90,7 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                 if ($customer->id_gender == 1) {
                     $unzerCustomer
                         ->setSalutation(\UnzerSDK\Constants\Salutations::MR);
-                } elseif ($customer->id_gender = 2) {
+                } elseif ($customer->id_gender == 2) {
                     $unzerCustomer
                         ->setSalutation(\UnzerSDK\Constants\Salutations::MRS);
                 } else {
@@ -143,7 +143,7 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                     $basketItems[] = $basketItem;
                 }
 
-                $discountsAmount = Context::getContext()->cart->getOrderTotal(true, CART::ONLY_DISCOUNTS);
+                $discountsAmount = Context::getContext()->cart->getOrderTotal(true, Cart::ONLY_DISCOUNTS);
                 if ($discountsAmount > 0) {
                     $tmpSum -= $discountsAmount;
                     $basketItem = (new \UnzerSDK\Resources\EmbeddedResources\BasketItem())
@@ -250,6 +250,7 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                 $paypage->setResources($resources);
                 $paypage->setType("embedded");
                 $paypage->setMode(UnzerpaymentHelper::getPaymentMethodChargeMode($selectedPaymentMethod) == 'authorize' || UnzerpaymentHelper::isSandboxMode() ? 'authorize' : 'charge');
+                $paypage->setCheckoutType(\UnzerSDK\Constants\PaypageCheckoutTypes::PAYMENT_ONLY);
 
                 $redirectUrl = UnzerpaymentHelper::getSuccessUrl(
                     [
@@ -290,6 +291,7 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                     'token' => $paypage->getId(),
                     'pubKey' => Configuration::get('UNZERPAYMENT_PUBLIC_KEY'),
                     'successURL' => $redirectUrl,
+                    'unzerLocale' => strtolower(Context::getContext()->language->iso_code),
                     'ctp' => Configuration::get('UNZERPAYMENT_PAYMENTYPE_STATUS_clicktopay') == '1'];
             break;
         }
