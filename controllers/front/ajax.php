@@ -16,6 +16,8 @@
 use Unzerpayment\Classes\UnzerpaymentClient;
 use UnzerPayment\Classes\UnzerpaymentHelper;
 use UnzerPayment\Classes\UnzerpaymentLogger;
+use UnzerSDK\Constants\CompanyCommercialSectorItems;
+use UnzerSDK\Constants\CompanyRegistrationTypes;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -81,7 +83,8 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                     ->setMobile($addressBilling->phone_mobile)
                     ->setPhone($addressBilling->phone_mobile)
                     ->setBillingAddress($unzerAddressBilling)
-                    ->setShippingAddress($unzerAddressShipping);
+                    ->setShippingAddress($unzerAddressShipping)
+                    ->setLanguage(strtolower(Context::getContext()->language->iso_code));
 
                 if (\Validate::isBirthDate($customer->birthday) && $customer->birthday != '0000-00-00') {
                     $unzerCustomer
@@ -96,6 +99,21 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                 } else {
                     $unzerCustomer
                         ->setSalutation(\UnzerSDK\Constants\Salutations::UNKNOWN);
+                }
+
+                if ($addressBilling->company != '') {
+                    $unzerCompanyInfo = new \UnzerSDK\Resources\EmbeddedResources\CompanyInfo();
+                    $unzerCompanyInfo->setCompanyType('other');
+                    $unzerCompanyInfo->setRegistrationType(CompanyRegistrationTypes::REGISTRATION_TYPE_NOT_REGISTERED);
+                    $unzerCompanyInfo->setFunction('OWNER');
+                    $unzerCompanyInfo->setCommercialSector(CompanyCommercialSectorItems::OTHER);
+                    $unzerCustomer->setCompanyInfo(
+                        $unzerCompanyInfo
+                    );
+                } else {
+                    $unzerCustomer->setCompanyInfo(
+                        null
+                    );
                 }
 
                 if ($need_customer_update) {
@@ -155,7 +173,10 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                     $basketItems[] = $basketItem;
                 }
 
-                $difference = ((float)Context::getContext()->cart->getOrderTotal()*100 - (float)$tmpSum*100)/100;
+                $cartTotalCents = (int) round(Context::getContext()->cart->getOrderTotal() * 100);
+                $tmpSumCents    = (int) round($tmpSum * 100);
+                $difference = ($cartTotalCents - $tmpSumCents) / 100;
+
                 if ($difference > 0) {
                     $basketItem = (new \UnzerSDK\Resources\EmbeddedResources\BasketItem())
                         ->setBasketItemReferenceId('add-shipping-delta')
@@ -193,6 +214,19 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                         $metadata->addMetadata($key, $val);
                     }
                 }
+
+                $metadata->addMetadata(
+                    'psCartId',
+                    Context::getContext()->cart->id
+                );
+                $metadata->addMetadata(
+                    'psCustomerId',
+                    Context::getContext()->customer->id
+                );
+                $metadata->addMetadata(
+                    'psSelectedPaymentMethod',
+                    $selectedPaymentMethod
+                );
                 $unzer->createMetadata($metadata);
 
                 $resources = new \UnzerSDK\Resources\EmbeddedResources\Paypage\Resources(
@@ -249,13 +283,21 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                 $paypage->setPaymentMethodsConfigs($paymentMethodsConfig);
                 $paypage->setResources($resources);
                 $paypage->setType("embedded");
-                $paypage->setMode(UnzerpaymentHelper::getPaymentMethodChargeMode($selectedPaymentMethod) == 'authorize' || UnzerpaymentHelper::isSandboxMode() ? 'authorize' : 'charge');
+                if ($selectedPaymentMethod == 'wero') {
+                    $paypage->setMode('charge');
+                } else {
+                    $paypage->setMode(UnzerpaymentHelper::getPaymentMethodChargeMode($selectedPaymentMethod) == 'authorize' || UnzerpaymentHelper::isSandboxMode() ? 'authorize' : 'charge');
+                }
                 $paypage->setCheckoutType(\UnzerSDK\Constants\PaypageCheckoutTypes::PAYMENT_ONLY);
+                $paypage->setOrderId($orderId);
 
                 $redirectUrl = UnzerpaymentHelper::getSuccessUrl(
                     [
                         'caid' => Context::getContext()->cart->id,
                         'cuid' => Context::getContext()->customer->id,
+                        'uspm' => $selectedPaymentMethod,
+                        'umi' => $metadata->getId(),
+                        'ch' => md5($this->context->customer->secure_key . $metadata->getId())
                     ]
                 );
 
@@ -281,6 +323,7 @@ class UnzerpaymentAjaxModuleFrontController extends ModuleFrontController
                 UnzerpaymentLogger::getInstance()->addLog('received page page token', 3, false, [
                     'UnzerPaymentId' => $paypage->getId(),
                     'token' => $paypage->getId(),
+                    'selectedPaymentMethod' => $selectedPaymentMethod
                 ]);
 
                 Context::getContext()->cookie->UnzerPaypageId = $paypage->getId();

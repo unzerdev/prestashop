@@ -28,16 +28,27 @@ class UnzerpaymentClient extends \UnzerSDK\Unzer {
 
     public static $_instance = null;
 
-    public static function getInstance()
+    /**
+     * @param $reset
+     * @return self|null
+     */
+    public static function getInstance($reset = false)
     {
+        if ($reset) {
+            self::$_instance = null;
+        }
         if (\Configuration::get('UNZERPAYMENT_PRIVATE_KEY') == '') {
             return null;
         }
         if (null === self::$_instance) {
-            self::$_instance = new self(
-                \Configuration::get('UNZERPAYMENT_PRIVATE_KEY'),
-                UnzerpaymentHelper::getUnzerLanguage()
-            );
+            try {
+                self::$_instance = new self(
+                    \Configuration::get('UNZERPAYMENT_PRIVATE_KEY'),
+                    UnzerpaymentHelper::getUnzerLanguage()
+                );
+            } catch (\Exception $e) {
+                self::$_instance = null;
+            }
         }
         return self::$_instance;
     }
@@ -78,23 +89,70 @@ class UnzerpaymentClient extends \UnzerSDK\Unzer {
     }
 
     /**
+     * @param $context
      * @return array
      * @throws \UnzerSDK\Exceptions\UnzerApiException
      */
-    public static function getAvailablePaymentMethods()
+    public static function getAvailablePaymentMethods($context = 'backend')
     {
         $unzerClient = self::getInstance();
-        if (is_null($unzerClient)) {
+        if ($unzerClient === null) {
             return [];
         }
+
         $keypairResponse = $unzerClient->fetchKeypair(true);
         $availablePaymentTypes = $keypairResponse->getAvailablePaymentTypes();
-        usort($availablePaymentTypes, function ($a, $b) { return strcmp(strtolower($a->type), strtolower($b->type)); });
-        foreach ($availablePaymentTypes as $availablePaymentTypeKey => &$availablePaymentType) {
-            if ($availablePaymentType->type == 'PIS' || $availablePaymentType->type == 'giropay' || $availablePaymentType->type == 'bancontact') {
-                unset($availablePaymentTypes[$availablePaymentTypeKey]);
+
+        $availablePaymentTypes = array_values(array_filter(
+            $availablePaymentTypes,
+            static function ($paymentType) {
+                return !in_array($paymentType->type, ['PIS', 'giropay'], true);
             }
+        ));
+
+        if ($context === 'frontend') {
+            $order = [
+                'paylater-invoice',
+                'paylater-installment',
+                'paylater-direct-debit',
+                'openbanking-pis',
+                'card',
+                'clicktopay',
+                'applepay',
+                'googlepay',
+                'wero',
+                'klarna',
+                'EPS',
+                'ideal',
+                'przelewy24',
+                'twint',
+                'post-finance-efinance',
+                'post-finance-card',
+                'payu',
+                'sepa-direct-debit',
+                'prepayment',
+                'invoice',
+                'bancontact',
+                'paypal',
+                'alipay',
+                'wechatpay',
+                'sofort'
+            ];
+
+            $orderMap = array_flip($order);
+
+            usort($availablePaymentTypes, static function ($a, $b) use ($orderMap) {
+                $aPos = $orderMap[$a->type] ?? PHP_INT_MAX;
+                $bPos = $orderMap[$b->type] ?? PHP_INT_MAX;
+
+                return $aPos <=> $bPos;
+            });
+        } else {
+            usort($availablePaymentTypes, static function ($a, $b) {
+                return strcasecmp($a->type, $b->type);
+            });
         }
+
         return $availablePaymentTypes;
     }
 

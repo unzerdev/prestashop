@@ -1,6 +1,6 @@
 # UnzerPayment
 
-Unzer payment integration for PrestaShop 1.7.x, V8.x and V9 (Beta)
+Unzer payment integration for PrestaShop 1.7.x, V8.x and V9.x
 
 ## Installation out of github
 
@@ -9,6 +9,23 @@ Unzer payment integration for PrestaShop 1.7.x, V8.x and V9 (Beta)
 3. Switch to admin and install the plugin using the PrestaShop plugin manager and configure it as you need.
 
 ## Changelog
+
+# v1.2.5
+* Fixed transaction type for Wero
+
+# v1.2.4
+* Bugfix keypair validation in backend
+* Default order payment methods
+* Compatibility PrestaShop 9.1 beta
+
+# v1.2.3
+* Updated payment methods naming and icons
+* UX improvements in backend configuration
+* Fix Klarna integration
+
+# v1.2.2
+* Implemented a workaround to prevent potential session loss during iDeal payments when the iDeal app is used on specific devices.
+* B2B customer object update
 
 # v1.2.1
 * Added order reference to charge calls

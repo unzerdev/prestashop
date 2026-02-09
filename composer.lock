@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "93cd634a595f37913d631a1fb32aeb38",
+    "content-hash": "16c549f2f944a948e9cc91cf3e44c6f1",
     "packages": [
         {
             "name": "unzerdev/php-sdk",
-            "version": "3.11.0",
+            "version": "3.13.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/unzerdev/php-sdk.git",
-                "reference": "274650b6120b8665c8867627210cd8adab65406b"
+                "reference": "5156e22f9ed3d30e0d81433d466801c9fe07c0ab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/unzerdev/php-sdk/zipball/274650b6120b8665c8867627210cd8adab65406b",
-                "reference": "274650b6120b8665c8867627210cd8adab65406b",
+                "url": "https://api.github.com/repos/unzerdev/php-sdk/zipball/5156e22f9ed3d30e0d81433d466801c9fe07c0ab",
+                "reference": "5156e22f9ed3d30e0d81433d466801c9fe07c0ab",
                 "shasum": ""
             },
             "require": {
@@ -45,9 +45,9 @@
             "description": "This is the php sdk to connect to the Unzer rest API.",
             "support": {
                 "email": "support@unzer.com",
-                "source": "https://github.com/unzerdev/php-sdk/tree/3.11.0"
+                "source": "https://github.com/unzerdev/php-sdk/tree/3.13.2"
             },
-            "time": "2024-12-04T08:14:47+00:00"
+            "time": "2025-10-21T09:14:01+00:00"
         }
     ],
     "packages-dev": [],

@@ -14,8 +14,8 @@ $_MODULE['<{unzerpayment}prestashop>unzerpayment_c888438d14855d7d96a2724ee9c306b
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_e34ea7e4d4b3916d8e4dd0b586a8c63d'] = 'WeChat Pay';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_29e65b5c1c804ee58153fbca19356807'] = 'SEPA Lastschrift';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_fa42b816950b79e3c969c637657845ad'] = 'Alipay';
-$_MODULE['<{unzerpayment}prestashop>unzerpayment_f41c79e97560de77c09f7e3f995b79b8'] = 'Ratenkauf';
-$_MODULE['<{unzerpayment}prestashop>unzerpayment_c2b43f95c38624d251e69ae7a5ff2467'] = 'Rechnungskauf';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_f41c79e97560de77c09f7e3f995b79b8'] = 'Ratenzahlung';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_c2b43f95c38624d251e69ae7a5ff2467'] = 'Rechnung';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_95e89ede5f20bc7d3d8b39fb38ea270e'] = 'Google Pay';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_1e0c70f24ffde69752c6b41ca5f5d536'] = 'Post Finance Card';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_00016e57f2fa29837c8721c8c5007c58'] = 'Przelewy24';
@@ -24,7 +24,7 @@ $_MODULE['<{unzerpayment}prestashop>unzerpayment_962d13fd2a584598d5f68c4408169e2
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_c2c027d8c62500300145c3043546d4c6'] = 'EPS';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_eaa79f7e820259631a6491113d12cbee'] = 'Klarna';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_5dd2199ad68327cc76d583b057aee7d5'] = 'Kreditkarte';
-$_MODULE['<{unzerpayment}prestashop>unzerpayment_9826da6e585a6816eb41f914b03c83a0'] = 'Direkt-Überweisung';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_9826da6e585a6816eb41f914b03c83a0'] = 'Direktüberweisung';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_e0f764e23bc8c486ca18c6378291afe3'] = 'Giropay';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_5b719fbf5c81afb81435f6a9cc4766f4'] = 'Vorkasse';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_e5f96ae00443877315fbb64fd3d90005'] = 'Rechnung';
@@ -35,6 +35,7 @@ $_MODULE['<{unzerpayment}prestashop>unzerpayment_c2b64e3eed84e89d4ea07cdfc69cfc5
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_a0a058baaeef16e88f6bd2ee36c03f6f'] = 'PayPal';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_b3eb844216217d236d050c7171fc4a59'] = 'Apple Pay';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_19bba0879cfc8536d27ea8b80f041520'] = 'Click to Pay';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_3d2a817f3cfa057ab39b5af3a0317169'] = 'Wero';
 $_MODULE['<{unzerpayment}prestashop>transactions_04b68fd479aafdcd0aa300eb69d41f0f'] = 'Unzer Transaktionen';
 $_MODULE['<{unzerpayment}prestashop>transactions_bc30768048a7bbfd2d158d722c140c6d'] = 'Gesamtbetrag';
 $_MODULE['<{unzerpayment}prestashop>transactions_e5b6035a9fb97a40ca129f388279b742'] = 'Eingezogener Betrag';
@@ -103,6 +104,6 @@ $_MODULE['<{unzerpayment}prestashop>unzerpaymentadminconfigformhelper_71f5a19e79
 $_MODULE['<{unzerpayment}prestashop>unzerpaymentadminconfigformhelper_46b14241061dbff4554223d5ebf5376b'] = 'Tagline Schriftgröße';
 $_MODULE['<{unzerpayment}prestashop>unzerpaymentadminconfigformhelper_76b9d6b54f2d125515321f83f0736697'] = 'Tagline Hintergrundfarbe';
 
-$_MODULE['<{unzerpayment}prestashop>unzerpayment_62b1f47878dc167729e871cd9cbe8980'] = 'Paylater Lastschrift';
-$_MODULE['<{unzerpayment}prestashop>unzerpayment_848bb45c21d69921bf10df30daa9a39e'] = 'Paylater Ratenkauf';
-$_MODULE['<{unzerpayment}prestashop>unzerpayment_87918cd1ab95865baeb7ba6e75520288'] = 'Paylater Rechnungskauf';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_62b1f47878dc167729e871cd9cbe8980'] = 'Lastschrift';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_848bb45c21d69921bf10df30daa9a39e'] = 'Ratenzahlung';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_87918cd1ab95865baeb7ba6e75520288'] = 'Rechnung';

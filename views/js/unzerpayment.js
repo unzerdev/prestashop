@@ -84,8 +84,8 @@ $(document).ready(function ($) {
                 // Subscribe to the error event
                 checkout.error(function (error) {
                     console.log(error);
-                    alert(error);
-                    return;
+                    //alert(error);
+                    //return;
                     window.location.href = unzerErrorUrl;
                 });
 

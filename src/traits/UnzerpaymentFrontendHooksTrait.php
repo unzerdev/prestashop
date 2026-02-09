@@ -24,7 +24,7 @@ trait UnzerpaymentFrontendHooksTrait
     /**
      * Add the CSS & JavaScript files you want to be added on the FO.
      */
-    public function hookHeader()
+    public function hookDisplayHeader()
     {
         /**
          * Have to do it the hardcoded way as PrestaShop currently does not support "type=module" for registerJavaScript()
@@ -83,7 +83,7 @@ trait UnzerpaymentFrontendHooksTrait
 
         $options = [];
 
-        foreach (UnzerpaymentClient::getAvailablePaymentMethods() as $paymentMethod) {
+        foreach (UnzerpaymentClient::getAvailablePaymentMethods('frontend') as $paymentMethod) {
             $paymentType = $paymentMethod->type;
             if ($paymentType == 'clicktopay') {
                 continue;

@@ -17,6 +17,7 @@ use UnzerPayment\Classes\UnzerpaymentLogger;
 use UnzerSDK\Constants\WebhookEvents;
 use Unzerpayment\Classes\UnzerpaymentHelper;
 use Unzerpayment\Classes\UnzerpaymentClient;
+use PrestaShop\PrestaShop\Adapter\Order\OrderCreator;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -61,7 +62,6 @@ class UnzerpaymentNotifyModuleFrontController extends ModuleFrontController
             );
         }
 
-
         UnzerpaymentLogger::getInstance()->addLog('webhook received', 2, false, [
             'data' => $data
         ]);
@@ -73,12 +73,94 @@ class UnzerpaymentNotifyModuleFrontController extends ModuleFrontController
         }
 
         $orderId = UnzerpaymentHelper::getOrderIdByTransactionId(
-            $data['paymentId']
+            $data['paymentId'],
+            UnzerpaymentHelper::getShopIdsByPubKey($data['publicKey'])
         );
+
         if ( empty( $orderId ) ) {
             UnzerpaymentLogger::getInstance()->addLog('no order id for webhook event found', 1, false, [
                 'data' => $data
             ]);
+
+            if ($data['event'] === WebhookEvents::CHARGE_SUCCEEDED || $data['event'] === WebhookEvents::AUTHORIZE_SUCCEEDED) {
+                $unzer = UnzerpaymentClient::getInstance();
+                $payment = $unzer->fetchPayment(
+                    $data['paymentId']
+                );
+
+                if ($payment) {
+                    $metadata = $payment->getMetadata();
+                    $psCartId = $metadata->getMetadata('psCartId');
+                    $psCustomerId = $metadata->getMetadata('psCustomerId');
+                    $psSelectedPaymentMethod = $metadata->getMetadata('psSelectedPaymentMethod');
+
+                    $cart = new Cart((int)$psCartId);
+                    $customer = new Customer((int)$psCustomerId);
+
+                    if (!is_null($cart->id) && !is_null($customer->id)) {
+
+                        if ($payment->isCompleted()) {
+                            $orderStatus = Configuration::get('UNZERPAYMENT_STATUS_CAPTURED');
+                        } else {
+                            $orderStatus = Configuration::get('UNZERPAYMENT_STATUS_PLACED');
+                        }
+
+                        $paymentMethodName = \Unzerpayment\Classes\UnzerpaymentClient::guessPaymentMethodClass(
+                            $psSelectedPaymentMethod
+                        );
+                        $paymentMethodName = \UnzerPayment\Classes\UnzerpaymentHelper::getMappedPaymentName(
+                            $paymentMethodName
+                        );
+
+                        try {
+                            UnzerpaymentLogger::getInstance()->addLog('Validating order from Webhook', 3, false, ['transaction_id' => $data['paymentId']]);
+                            $this->module->validateOrder(
+                                $psCartId,
+                                $orderStatus,
+                                $payment->getAmount()->getTotal(),
+                                $paymentMethodName . ' (' . $this->module->displayName . ')',
+                                '',
+                                [
+                                    'transaction_id' => $data['paymentId'],
+                                ],
+                                $cart->id_currency,
+                                false,
+                                $customer->secure_key
+                            );
+
+                            $metadata = $unzer->fetchMetadata(
+                                $metadata->getId()
+                            );
+                            $metadata->addMetadata(
+                                'shopOrderId', $this->module->currentOrder
+                            );
+                            $order = new \Order((int)$this->module->currentOrder);
+                            $metadata->addMetadata(
+                                'shopOrderReference', $order->reference
+                            );
+                            UnzerpaymentLogger::getInstance()->addLog('Trying to set metadata', 3, false, [$metadata]);
+                            try {
+                                $unzer->getResourceService()->updateResource(
+                                    $metadata
+                                );
+                            } catch (\Exception $e) {
+                                UnzerpaymentLogger::getInstance()->addLog('Could not update metadata', 1, $e, [$metadata]);
+                            }
+
+                        } catch (Exception $e) {
+                            UnzerpaymentLogger::getInstance()->addLog('Order could not be validated from Webhook', 1, $e);
+                            $this->renderJson(
+                                array(
+                                    'success' => true,
+                                    'msg'     => 'order not found or relevant in shop',
+                                )
+                            );
+                        }
+
+                    }
+                }
+            }
+
             exit();
         }
 
