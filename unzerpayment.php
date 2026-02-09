@@ -48,8 +48,8 @@ class Unzerpayment extends PaymentModule
         'displayAdminOrder',
         'displayPDFInvoice',
         'adminOrder',
-        'header',
-        'backOfficeHeader',
+        'displayHeader',
+        'displayBackOfficeHeader',
         'paymentOptions',
     ];
 
@@ -61,7 +61,7 @@ class Unzerpayment extends PaymentModule
         $this->name = 'unzerpayment';
         $this->tab = 'payments_gateways';
         $this->author = 'Unzer GmbH';
-        $this->version = '1.2.1';
+        $this->version = '1.2.5';
         $this->need_instance = 1;
         $this->module_key = '';
         $this->bootstrap = true;
@@ -221,7 +221,28 @@ class Unzerpayment extends PaymentModule
      */
     public function getContent()
     {
-        $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance();
+        if (((bool)Tools::isSubmit('submitUnzerpaymentModule')) == true) {
+            $this->postProcess();
+            $this->registerWebhooks(true);
+        }
+        $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance(true);
+
+        if (!empty($unzer) && \Configuration::get('UNZERPAYMENT_PRIVATE_KEY') != '') {
+            $keypair_invalid = false;
+            try {
+                $unzer->fetchKeypair();
+            } catch (\Exception $e) {
+                $keypair_invalid = true;
+            }
+
+            if (
+                !\UnzerSDK\Validators\PrivateKeyValidator::validate(\Configuration::get('UNZERPAYMENT_PRIVATE_KEY')) ||
+                !\UnzerSDK\Validators\PublicKeyValidator::validate(\Configuration::get('UNZERPAYMENT_PUBLIC_KEY')) ||
+                $keypair_invalid
+            ) {
+                $this->_errormessage = $this->l('Invalid keys: Please check your configured keypair.');
+            }
+        }
         if (Tools::getValue('unzerAdminAction') == 'delWebhook') {
             if ($webhookId = Tools::getValue('webhookId')) {
                 try {
@@ -235,12 +256,6 @@ class Unzerpayment extends PaymentModule
             }
         } elseif (Tools::getValue('unzerAdminAction') == 'createWebhook') {
             $this->registerWebhooks();
-        }
-
-        if (((bool)Tools::isSubmit('submitUnzerpaymentModule')) == true) {
-            $this->postProcess();
-            $this->registerWebhooks();
-            $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance();
         }
 
         $this->context->smarty->assign('module_dir', $this->_path);
@@ -287,7 +302,7 @@ class Unzerpayment extends PaymentModule
         return $output;
     }
 
-    protected function registerWebhooks()
+    protected function registerWebhooks($auto = false)
     {
         try {
             if (is_null(\Unzerpayment\Classes\UnzerpaymentClient::getInstance())) {
@@ -299,7 +314,9 @@ class Unzerpayment extends PaymentModule
             );
             $this->_successmessage = $this->l('Webhook successfully added');
         } catch (\Exception $e) {
-            $this->_errormessage = $this->l('Cannot add webhook.') . ' API Info: ' . $e->getMessage();
+            if (!$auto) {
+                $this->_errormessage = $this->l('Cannot add webhook.') . ' API Info: ' . $e->getMessage();
+            }
         }
     }
 
@@ -363,6 +380,7 @@ class Unzerpayment extends PaymentModule
         $this->l('applepay');
         $this->l('openbanking-pis');
         $this->l('clicktopay');
+        $this->l('wero');
     }
 
 }

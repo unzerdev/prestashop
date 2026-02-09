@@ -26,12 +26,57 @@ class UnzerpaymentSuccessModuleFrontController extends ModuleFrontController
 
     public function postProcess()
     {
-        if (!isset(Context::getContext()->cookie->UnzerPaypageId)) {
-            UnzerpaymentLogger::getInstance()->addLog('Call with missing UnzerPaymentId', 2, false);
-            $this->errorRedirect();
+
+        UnzerpaymentLogger::getInstance()->addLog('Call of success controller', 3, false, [$_GET, Context::getContext()->cookie]);
+
+        $UnzerPaypageId = false;
+        $UnzerSelectedPaymentMethod = false;
+        $UnzerMetadataId = false;
+        $CustomerId = false;
+
+        if (isset(Context::getContext()->cookie->UnzerPaypageId)) {
+            $UnzerPaypageId = Context::getContext()->cookie->UnzerPaypageId;
+        } elseif (Tools::getValue('uppid') != '') {
+            $UnzerPaypageId = Tools::getValue('uppid');
         }
 
-        if (!isset(Context::getContext()->cookie->UnzerSelectedPaymentMethod)) {
+        if (isset(Context::getContext()->cookie->UnzerSelectedPaymentMethod)) {
+            $UnzerSelectedPaymentMethod = Context::getContext()->cookie->UnzerSelectedPaymentMethod;
+        } elseif (Tools::getValue('uspm') != '') {
+            $UnzerSelectedPaymentMethod = Tools::getValue('uspm');
+        }
+
+        if (isset(Context::getContext()->cookie->UnzerMetadataId)) {
+            $UnzerMetadataId = Context::getContext()->cookie->UnzerMetadataId;
+        } elseif (Tools::getValue('umi') != '') {
+            $UnzerMetadataId = Tools::getValue('umi');
+        }
+
+        if (isset(Context::getContext()->customer->id) && Tools::getValue('cuid') == Context::getContext()->customer->id) {
+            $CustomerId = Context::getContext()->customer->id;
+        } elseif (Tools::getValue('cuid') != '') {
+            $CustomerId = (int)Tools::getValue('cuid');
+            Context::getContext()->customer = new Customer((int)$CustomerId);
+            Context::getContext()->cart = new Cart((int)Tools::getValue('caid'));
+        }
+
+        if (!$UnzerPaypageId) {
+            try {
+                $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance();
+                $payment = $unzer->fetchPayment(Tools::getValue('paymentId'));
+                if ($payment->getMetadata()->getMetadata('Unzer_PaymentPageID') != '') {
+                    $UnzerPaypageId = $payment->getMetadata()->getMetadata('Unzer_PaymentPageID');
+                } else {
+                    UnzerpaymentLogger::getInstance()->addLog('Call with missing UnzerPaymentId', 2, false);
+                    $this->errorRedirect();
+                }
+            } catch (\Exception $e) {
+                UnzerpaymentLogger::getInstance()->addLog('Error fetching Paypage-ID from API', 2, false);
+                $this->errorRedirect();
+            }
+        }
+
+        if (!$UnzerSelectedPaymentMethod) {
             UnzerpaymentLogger::getInstance()->addLog('Call with missing UnzerSelectedPaymentMethod', 2, false);
             $this->errorRedirect();
         }
@@ -52,8 +97,13 @@ class UnzerpaymentSuccessModuleFrontController extends ModuleFrontController
             Tools::redirect($confirmationURL);
         }
 
+        if (md5($this->context->customer->secure_key . $UnzerMetadataId) != Tools::getValue('ch')) {
+            UnzerpaymentLogger::getInstance()->addLog('Call with invalid hash', 2, false);
+            $this->errorRedirect();
+        }
+
         $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance();
-        $paypage = $unzer->fetchPaypageV2(Context::getContext()->cookie->UnzerPaypageId);
+        $paypage = $unzer->fetchPaypageV2($UnzerPaypageId);
         $payment = $paypage->getPayments()[0];
 
         UnzerpaymentLogger::getInstance()->addLog('Fetched payment', 3, false, [$payment]);
@@ -72,7 +122,7 @@ class UnzerpaymentSuccessModuleFrontController extends ModuleFrontController
         $amount = Tools::ps_round(Context::getContext()->cart->getOrderTotal(true, Cart::BOTH), 2);
 
         $paymentMethodName = \Unzerpayment\Classes\UnzerpaymentClient::guessPaymentMethodClass(
-                Context::getContext()->cookie->UnzerSelectedPaymentMethod
+            $UnzerSelectedPaymentMethod
         );
         $paymentMethodName = \UnzerPayment\Classes\UnzerpaymentHelper::getMappedPaymentName(
             $paymentMethodName
@@ -99,7 +149,7 @@ class UnzerpaymentSuccessModuleFrontController extends ModuleFrontController
         }
 
         $metadata = $unzer->fetchMetadata(
-            Context::getContext()->cookie->UnzerMetadataId
+            $UnzerMetadataId
         );
         $metadata->addMetadata(
             'shopOrderId', $this->module->currentOrder

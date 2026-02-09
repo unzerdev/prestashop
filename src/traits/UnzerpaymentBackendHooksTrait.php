@@ -27,7 +27,7 @@ trait UnzerpaymentBackendHooksTrait
     /**
      * Add the CSS & JavaScript files you want to be loaded in the BO.
      */
-    public function hookBackOfficeHeader()
+    public function hookDisplayBackOfficeHeader()
     {
         if (Tools::getValue('module_name') == $this->name) {
             if (_PS_VERSION_ < 9) {

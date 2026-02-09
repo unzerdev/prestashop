@@ -27,7 +27,8 @@ $_MODULE['<{unzerpayment}prestashop>unzerpayment_a0a058baaeef16e88f6bd2ee36c03f6
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_b3eb844216217d236d050c7171fc4a59'] = 'Apple Pay';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_9826da6e585a6816eb41f914b03c83a0'] = 'Direct Transfer';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_19bba0879cfc8536d27ea8b80f041520'] = 'Click to Pay';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_3d2a817f3cfa057ab39b5af3a0317169'] = 'Wero';
 
-$_MODULE['<{unzerpayment}prestashop>unzerpayment_62b1f47878dc167729e871cd9cbe8980'] = 'Paylater Direct Debit';
-$_MODULE['<{unzerpayment}prestashop>unzerpayment_848bb45c21d69921bf10df30daa9a39e'] = 'Paylater Installment';
-$_MODULE['<{unzerpayment}prestashop>unzerpayment_87918cd1ab95865baeb7ba6e75520288'] = 'Paylater Invoice';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_62b1f47878dc167729e871cd9cbe8980'] = 'Direct Debit';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_848bb45c21d69921bf10df30daa9a39e'] = 'Installment';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_87918cd1ab95865baeb7ba6e75520288'] = 'Invoice';

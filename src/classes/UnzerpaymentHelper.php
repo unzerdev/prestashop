@@ -160,7 +160,7 @@ class UnzerpaymentHelper
      */
     public static function getInactivePaymentMethods()
     {
-        $inactive_payment_methods = ['giropay', 'PIS', 'bancontact'];
+        $inactive_payment_methods = ['giropay', 'PIS'];
         $methods = UnzerpaymentClient::getAvailablePaymentMethods();
         foreach ($methods as $method) {
             $paymentType = $method->type;
@@ -177,6 +177,9 @@ class UnzerpaymentHelper
      */
     public static function getPaymentMethodChargeMode($paymentRessourceClassName)
     {
+        if ($paymentRessourceClassName == 'wero') {
+            return 'charge';
+        }
         if (\Configuration::get('UNZERPAYMENT_PAYMENTYPE_CHARGE_MODE_' . $paymentRessourceClassName) == 'authorize') {
             return 'authorize';
         }
@@ -255,15 +258,33 @@ class UnzerpaymentHelper
     }
 
     /**
+     * @param $pubKey
+     * @return array|void
+     */
+    public static function getShopIdsByPubKey($pubKey)
+    {
+        $shop_ids = [];
+        $configPubKeys = \Configuration::getMultiShopValues('UNZERPAYMENT_PUBLIC_KEY');
+        foreach ($configPubKeys as $shopId => $configPubKey) {
+            if ($pubKey == $configPubKey) {
+                $shop_ids[] = $shopId;
+            }
+        }
+        return $shop_ids;
+    }
+
+    /**
      * @param $transactionId
+     * @param $shopIds
      * @return false|mixed
      */
-    public static function getOrderIdByTransactionId($transactionId)
+    public static function getOrderIdByTransactionId($transactionId, $shopIds)
     {
         $result = \Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow(
             'SELECT o.`id_order` FROM `' . _DB_PREFIX_ . 'order_payment` a
                JOIN `' . _DB_PREFIX_ . 'orders` o ON o.reference = a.order_reference
-              WHERE a.`transaction_id` = "' . pSQL($$transactionId) . '"'
+              WHERE a.`transaction_id` = "' . pSQL($transactionId) . '"
+                AND o.`id_shop` IN (' . join(', ', $shopIds) . ')'
         );
         if (is_array($result) && $result['id_order']) {
             return $result['id_order'];

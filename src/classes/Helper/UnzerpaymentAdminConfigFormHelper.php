@@ -336,7 +336,7 @@ class UnzerpaymentAdminConfigFormHelper
                 $paymentType,
                 true
             );
-            if (UnzerpaymentHelper::paymentMethodCanAuthorize($paymentRessourceClassName) && $paymentType != 'clicktopay') {
+            if (UnzerpaymentHelper::paymentMethodCanAuthorize($paymentRessourceClassName) && $paymentType != 'clicktopay' && $paymentType != 'wero') {
                 $advanced_inputs[] =
                     array(
                         'type' => 'select',
