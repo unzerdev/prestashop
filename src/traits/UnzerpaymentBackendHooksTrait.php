@@ -80,7 +80,7 @@ trait UnzerpaymentBackendHooksTrait
             $redirect = false;
             $order = new Order($params['id_order']);
             if ($transaction_id = \UnzerPayment\Classes\UnzerpaymentHelper::getTransactionIdByOrder($order)) {
-                $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance();
+                $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance(true, $order->id_shop);
                 switch (Tools::getValue('unzer_action')) {
                     case 'unzer_capture':
                         $amount  = Tools::getValue('unzer_capture_amount') ? (float)Tools::getValue('unzer_capture_amount') : null;
@@ -147,7 +147,7 @@ trait UnzerpaymentBackendHooksTrait
         if ($params['newOrderStatus']->id == (int)\Configuration::get('UNZERPAYMENT_STATUS_CANCELLED')) {
             $order = new Order((int)$params['id_order']);
             if ($transaction_id = \UnzerPayment\Classes\UnzerpaymentHelper::getTransactionIdByOrder($order)) {
-                $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance();
+                $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance(true, $order->id_shop);
                 try {
                     UnzerpaymentLogger::getInstance()->addLog('cancelPayment Call', 2, false, [
                         'paymentId' => $transaction_id
@@ -178,7 +178,7 @@ trait UnzerpaymentBackendHooksTrait
         } elseif ($params['newOrderStatus']->id == (int)\Configuration::get('UNZERPAYMENT_STATUS_FULL_REFUND')) {
             $order = new Order((int)$params['id_order']);
             if ($transaction_id = \UnzerPayment\Classes\UnzerpaymentHelper::getTransactionIdByOrder($order)) {
-                $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance();
+                $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance(true, $order->id_shop);
                 try {
                     UnzerpaymentLogger::getInstance()->addLog('cancelPayment Call for full Refund', 2, false, [
                         'paymentId' => $transaction_id
@@ -210,7 +210,7 @@ trait UnzerpaymentBackendHooksTrait
             if (!UnzerpaymentHelper::isSandboxMode()) {
                 $order = new Order((int)$params['id_order']);
                 if ($transaction_id = \UnzerPayment\Classes\UnzerpaymentHelper::getTransactionIdByOrder($order)) {
-                    $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance();
+                    $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance(true, $order->id_shop);
                     try {
                         $payment = $unzer->fetchPayment($transaction_id);
                         if ($payment->getAmount()->getRemaining() > 0) {
@@ -256,7 +256,7 @@ trait UnzerpaymentBackendHooksTrait
                     $refundAmount = $orderSlip->amount + $orderSlip->shipping_cost_amount;
                 }
                 if ($refundAmount > 0) {
-                    $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance();
+                    $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance(true, $order->id_shop);
                     try {
                         UnzerpaymentLogger::getInstance()->addLog('cancelPayment Call', 2, false, [
                             'paymentId' => $transaction_id,
