@@ -11,7 +11,7 @@ $_MODULE['<{unzerpayment}prestashop>unzerpayment_c2b43f95c38624d251e69ae7a5ff246
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_95e89ede5f20bc7d3d8b39fb38ea270e'] = 'Google Pay';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_1e0c70f24ffde69752c6b41ca5f5d536'] = 'Post Finance Card';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_00016e57f2fa29837c8721c8c5007c58'] = 'Przelewy24';
-$_MODULE['<{unzerpayment}prestashop>unzerpayment_b3bfb5ad6ba04daf0f8f1930133d89dd'] = 'iDEAL';
+$_MODULE['<{unzerpayment}prestashop>unzerpayment_b3bfb5ad6ba04daf0f8f1930133d89dd'] = 'iDEAL | Wero';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_962d13fd2a584598d5f68c4408169e22'] = 'PIS';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_c2c027d8c62500300145c3043546d4c6'] = 'EPS';
 $_MODULE['<{unzerpayment}prestashop>unzerpayment_eaa79f7e820259631a6491113d12cbee'] = 'Klarna';
