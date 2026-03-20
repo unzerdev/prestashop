@@ -428,7 +428,7 @@ class UnzerpaymentHelper
      */
     public static function getTransactions($payment_id, $order)
     {
-        $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance();
+        $unzer = \Unzerpayment\Classes\UnzerpaymentClient::getInstance(true, $order->id_shop);
         $payment = $unzer->fetchPayment($payment_id);
         $currency     = $payment->getCurrency();
         $transactions = array();

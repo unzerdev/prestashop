@@ -10,6 +10,10 @@ Unzer payment integration for PrestaShop 1.7.x, V8.x and V9.x
 
 ## Changelog
 
+# v1.2.6
+* Multistore Order view update
+* Updated iDEAL Payment naming and logo
+
 # v1.2.5
 * Fixed transaction type for Wero
 

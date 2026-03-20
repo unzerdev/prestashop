@@ -30,20 +30,21 @@ class UnzerpaymentClient extends \UnzerSDK\Unzer {
 
     /**
      * @param $reset
+     * @param $shop_id
      * @return self|null
      */
-    public static function getInstance($reset = false)
+    public static function getInstance($reset = false, $shop_id = null)
     {
         if ($reset) {
             self::$_instance = null;
         }
-        if (\Configuration::get('UNZERPAYMENT_PRIVATE_KEY') == '') {
+        if (\Configuration::get('UNZERPAYMENT_PRIVATE_KEY', null, null, $shop_id) == '') {
             return null;
         }
         if (null === self::$_instance) {
             try {
                 self::$_instance = new self(
-                    \Configuration::get('UNZERPAYMENT_PRIVATE_KEY'),
+                    \Configuration::get('UNZERPAYMENT_PRIVATE_KEY', null, null, $shop_id),
                     UnzerpaymentHelper::getUnzerLanguage()
                 );
             } catch (\Exception $e) {
